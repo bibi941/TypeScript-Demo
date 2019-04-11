@@ -1,6 +1,10 @@
 {
     var Calculator = /** @class */ (function () {
         function Calculator() {
+            this.n1 = null;
+            this.n2 = null;
+            this.operator = null;
+            this.result = null;
             this.keys = [
                 ["clear", "÷"],
                 ["7", "8", "9", "x"],
@@ -58,47 +62,76 @@
                 if (e.target instanceof HTMLButtonElement) {
                     var button = e.target;
                     var text = button.textContent;
-                    if ("0123455679".indexOf(text) >= 0) {
-                        if (_this.operator) {
-                            if (_this.n2) {
-                                _this.n2 = parseInt(_this.n2.toString() + text);
-                            }
-                            else {
-                                _this.n2 = parseInt(text);
-                            }
-                            _this.span.textContent = _this.n2.toString();
-                        }
-                        else {
-                            if (_this.n1) {
-                                _this.n1 = parseInt(_this.n1.toString() + text);
-                            }
-                            else {
-                                _this.n1 = parseInt(text);
-                            }
-                            _this.span.textContent = _this.n1.toString();
-                        }
-                    }
-                    else if ("+-x÷".indexOf(text) >= 0) {
-                        _this.operator = text;
-                    }
-                    else if ("=".indexOf(text) >= 0) {
-                        if (_this.operator === "+") {
-                            _this.result = _this.n1 + _this.n2;
-                        }
-                        else if (_this.operator === "-") {
-                            _this.result = _this.n1 - _this.n2;
-                        }
-                        else if (_this.operator === "x") {
-                            _this.result = _this.n1 * _this.n2;
-                        }
-                        else if (_this.operator === "÷") {
-                            _this.result = _this.n1 / _this.n2;
-                        }
-                        _this.span.textContent = _this.result.toString();
-                    }
-                    console.log(_this.n1, _this.operator, _this.n2);
+                    _this.updateNumberOrOperator(text);
                 }
             });
+        };
+        Calculator.prototype.updateN1OrN2 = function (n, text) {
+            if (this[n]) {
+                this[n] = this[n] + text;
+            }
+            else {
+                this[n] = text;
+            }
+            this.span.textContent = this[n].toString();
+        };
+        Calculator.prototype.updateNumber = function (text) {
+            if (this.operator) {
+                this.updateN1OrN2("n2", text);
+            }
+            else {
+                this.updateN1OrN2("n1", text);
+            }
+        };
+        Calculator.prototype.updateResult = function () {
+            var n1 = parseFloat(this.n1);
+            var n2 = parseFloat(this.n2);
+            var result;
+            if (this.operator === "+") {
+                result = n1 + n2;
+            }
+            else if (this.operator === "-") {
+                result = n1 - n2;
+            }
+            else if (this.operator === "x") {
+                result = n1 * n2;
+            }
+            else if (this.operator === "÷") {
+                result = n1 / n2;
+            }
+            result = parseFloat(result.toPrecision(12));
+            if (n2 === 0) {
+                result = '不是数字';
+            }
+            this.span.textContent = result.toString();
+            this.n1 = null;
+            this.n2 = null;
+            this.operator = null;
+            this.result = result;
+        };
+        Calculator.prototype.updateOperator = function (text) {
+            if (this.n1 === null) {
+                this.n1 = this.result;
+            }
+            this.operator = text;
+        };
+        Calculator.prototype.updateNumberOrOperator = function (text) {
+            if ("0123455679.".indexOf(text) >= 0) {
+                this.updateNumber(text);
+            }
+            else if ("+-x÷".indexOf(text) >= 0) {
+                this.updateOperator(text);
+            }
+            else if ("=".indexOf(text) >= 0) {
+                this.updateResult();
+            }
+            else if (text === "clear") {
+                this.n1 = null;
+                this.n2 = null;
+                this.operator = null;
+                this.result = null;
+                this.span.textContent = "0";
+            }
         };
         return Calculator;
     }());
